@@ -1,0 +1,68 @@
+.vc-sys-card-view {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 25px;
+}
+.vc-sys-card {
+  position: relative;
+  display: inline-block;
+  width: 30%;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #efefef;
+  background-color: #fff;
+  border-radius: 5px;
+  padding: 10px 30px;
+  cursor: pointer;
+  transition: background-color ease-in-out 0.3s;
+
+  &:hover {   
+    background-color: #f1f1f1;
+  }
+
+  h3 {
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .chart {
+    position: absolute;
+    top: 40px;
+    right: 10px;
+    bottom: 10px;
+    width: 60%;
+
+    &.center {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+    }
+  }
+}
+.vc-prop-item {
+  position: relative;
+  padding: 6px 30px;
+
+  > span {
+    display: inline-block;
+    width: 26%;
+    text-align: right;
+    font-weight: bold;
+  }
+}
+
+.steps-content {
+  margin-top: 16px;
+  padding: 10px 16px;
+  border: 1px dashed #e9e9e9;
+  border-radius: 6px;
+  background-color: #fafafa;
+}
+.steps-action {
+  margin-top: 24px;
+}
+.vc-desc p {
+  margin-bottom: 1em;
+}

@@ -1,0 +1,83 @@
+.vc-settings {
+
+  h3 {
+    color: rgba(0,0,0,.85);
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 28px;
+    margin-bottom: 12px;
+  }
+
+  
+}
+.vc-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+}
+.avatar-uploader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 50px;
+  overflow: hidden;
+ 
+  img {
+    width: 180px;
+    height: 180px;
+  }
+  .ant-upload {
+    border-radius: 50%;
+    margin: 0 30px;
+    width: 180px;
+    height: 180px;
+    overflow: hidden;
+    padding: 0;
+
+    &.ant-upload-select-picture-card > .ant-upload {
+      padding: 0;
+    }
+  }
+}
+
+.vc-settings-card.margin {
+  margin: 1.5rem !important;
+}
+.vc-settings-card .ant-card-body {
+  padding-left: 0;
+}
+.vc-settings-tab {
+
+  .ant-tabs-left-content {
+    padding-left: 40px;
+  }
+  .ant-tabs-tab-active {
+    background-color: rgba(26, 144, 255, 0.06);
+  }
+  .ant-tabs-left-bar .ant-tabs-tab {
+    margin-bottom: 5px;
+  }
+  .ant-tabs-nav-wrap {
+    min-width: 200px;
+  }
+
+
+}
+
+.vc-action-card {
+  .ant-card-grid {
+    padding: 10px 0;
+    box-shadow: none;
+    border-color: transparent;
+    cursor: pointer; 
+    font-size: 1.3em;
+
+    > span {
+      margin-right: 8px;
+    }
+
+    &:hover {
+      color: rgb(0, 122, 223);
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "appenders": {
+    "http": {
+      "type": "dateFile",
+      "filename": "logs/http.log",
+      "pattern": "yyyy.MM.dd.log",
+      "category": "http",
+      "maxLogSize": 10485760,
+      "numBackups": 3
+    },
+    "errorFile": {
+      "type": "file",
+      "filename": "logs/errors.log"
+    },
+    "errors": {
+      "type": "logLevelFilter",
+      "level": "ERROR",
+      "appender": "errorFile"
+    }
+  },
+  "categories": {
+    "default": { "appenders": [ "http", "errors" ], "level": "DEBUG" },
+    "http": { "appenders": [ "http"], "level": "DEBUG" }
+  }
+}

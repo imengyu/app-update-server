@@ -1,0 +1,64 @@
+
+.error {
+  position: relative;
+  text-align: center;
+  padding: 25px;
+
+  i {
+    font-size: 50px;
+  }
+  h1 {
+    margin-bottom: 5px;
+    font-size: 16px;
+    margin-top: 20px;
+  }
+  span {
+    font-size: 13px;
+    color: #888;
+  } 
+}
+
+.vc-small-head {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.vc-search-form {
+  text-align: right;
+  margin: 10px 0;
+
+  > .ant-form-item {
+    text-align: initial;
+  }
+}
+
+.home {
+  position: relative;
+  padding: 25px;
+
+  .big1 {
+    font-size: 60px;
+    font-weight: bold;
+    position: absolute;
+  }
+  .big2 {
+    font-weight: bold;
+    font-size: 40px;
+    position: absolute;
+    left: 60px;
+    top: 70px;
+    color: #c5c5c5;
+  }
+
+  .con {
+    margin-top: 100px;
+    max-width: 800px;
+
+    h2 {
+      font-weight: bold;
+    }
+    h4 {
+      font-weight: bold;
+    }
+  }
+}
