@@ -2,7 +2,9 @@
   <div class="vc-host">
     <a-layout class="vc-root">
       <a-layout-sider v-model:collapsed="collapsed" :trigger="null" collapsible class="vc-side-menu">
-        <div :class="'vc-logo'+(collapsed?' collapsed':'')" />
+        <div :class="'vc-logo'+(collapsed?' collapsed':'')">
+          App更新服务
+        </div>
         <c-scrollbar style="height:auto">
           <a-menu
             class="vc-side-menu"
@@ -16,20 +18,24 @@
               <UserOutlined />
               <span>首页</span>
             </a-menu-item>
-            <a-sub-menu key="AppManagement">
+            <a-sub-menu key="ManageApp">
               <template #title>
                 <span>
                   <AppstoreOutlined />
                   <span>App管理</span>
                 </span>
               </template>
-              <a-menu-item key="AppManagement">
+              <a-menu-item key="ManageApp">
                 <AndroidOutlined />
                 <span>App管理</span>
               </a-menu-item>
-              <a-menu-item key="ChannelManagement">
+              <a-menu-item key="ManageChannel">
                 <ApartmentOutlined />
                 <span>渠道管理</span>
+              </a-menu-item>
+              <a-menu-item key="ManageUpdate">
+                <UploadOutlined />
+                <span>更新管理</span>
               </a-menu-item>
               <a-menu-item key="DataView">
                 <AreaChartOutlined />
@@ -99,6 +105,7 @@ import {
   AppstoreOutlined,
   ApartmentOutlined,
   AndroidOutlined,
+  UploadOutlined,
 } from '@ant-design/icons-vue';
 import { Modal } from "ant-design-vue";
 import { useStore } from "vuex";
@@ -117,6 +124,7 @@ export default defineComponent({
     AppstoreOutlined,
     ApartmentOutlined,
     AndroidOutlined,
+    UploadOutlined,
   },
   setup() {
 

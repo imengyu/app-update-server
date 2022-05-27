@@ -1,3 +1,6 @@
+import UpdateCotroller from './UpdateCotroller';
+import ChannelCotroller from './ChannelCotroller';
+import AppCotroller from './AppCotroller';
 import AuthController from "./AuthCotroller";
 import UserCotroller from "./UserCotroller";
 import WebCotroller from "./WebCotroller";
@@ -11,5 +14,8 @@ export function useAllControllers() {
     WebCotroller,
     PermissionCotroller,
     GroupCotroller,
+    AppCotroller,
+    ChannelCotroller,
+    UpdateCotroller,
   }
 }

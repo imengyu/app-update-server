@@ -3,7 +3,10 @@ import config from '../config'
 import login, { IAuthStruct } from './login'
 import user from './user'
 import group from './group'
+import app from './app'
+import channel from './channel'
 import permission from './permission'
+import update from './update'
 import store from '../store';
 import common from '@/utils/common';
 
@@ -90,5 +93,8 @@ export default {
   user,
   permission,
   group,
+  app,
+  update,
+  channel,
   getAxios,
 }

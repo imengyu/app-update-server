@@ -33,6 +33,26 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import(/* webpackChunkName: "user" */ '../views/User.vue')
       },
       {
+        path: 'ManageApp',
+        name: 'ManageApp',
+        component: () => import(/* webpackChunkName: "manageApp" */ '../views/ManageApp.vue')
+      },
+      {
+        path: 'ManageUpdate',
+        name: 'ManageUpdate',
+        component: () => import(/* webpackChunkName: "update" */ '../views/ManageUpdate.vue')
+      },
+      {
+        path: 'ManageChannel',
+        name: 'ManageChannel',
+        component: () => import(/* webpackChunkName: "channel" */ '../views/ManageChannel.vue')
+      },
+      {
+        path: 'DataView',
+        name: 'DataView',
+        component: () => import(/* webpackChunkName: "dataView" */ '../views/DataView.vue')
+      },
+      {
         path: 'userProfile',
         name: 'UserProfile',
         component: () => import(/* webpackChunkName: "userProfile" */ '../views/UserProfile.vue')

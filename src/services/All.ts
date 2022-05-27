@@ -1,3 +1,6 @@
+import UpdateService from './UpdateService';
+import ChannelService from './ChannelService';
+import AppService from './AppService';
 import AuthService from './AuthService'
 import PermissionService from './PermissionService'
 import UserService from './UserService'
@@ -9,5 +12,8 @@ export function useAllServices() {
     PermissionService,
     UserService,
     GroupService,
+    AppService,
+    ChannelService,
+    UpdateService,
   }
 }
