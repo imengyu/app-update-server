@@ -23,6 +23,11 @@
       :loading="dataLoadStatus=='loading'"
       v-if="dataLoadStatus=='success'||dataLoadStatus=='loading'"
       @change="handleTableChange">
+      <template #status="{ record }">
+        <a-badge v-if="record.status=='enabled'" status="success" text="正常" />
+        <a-badge v-else-if="record.status=='disabled'" status="error" text="暂停更新" />
+        <a-badge v-else status="warning" text="未知" />
+      </template>
       <template #action="{ record }">
         <span>
           <a @click="handleEdit(record)">编辑</a>
@@ -46,6 +51,12 @@
         </a-form-item>
         <a-form-item label="应用包名" name="package_name">
           <a-input v-model:value="formEditState.package_name" />
+        </a-form-item>
+        <a-form-item label="更新状态" name="code">
+          <a-select class="ml-3" v-model:value="formEditState.status">
+            <a-select-option value="enabled"><a-badge status="success" text="启用更新" /></a-select-option>
+            <a-select-option value="disabled"><a-badge status="error" text="暂停更新" /></a-select-option>
+          </a-select>
         </a-form-item>
       </a-form>
     </a-modal>
@@ -86,6 +97,11 @@ export default defineComponent({
         key: 'package_name',
         title: '包名',
         sorter: true,
+      },
+      {
+        key: 'status',
+        title: '更新状态',
+        slots: { customRender: 'status' },
       },
       {
         title: '操作',

@@ -32,6 +32,10 @@ export var ResposeCode = {
     code: 40404,
     message: '未找到资源'
   },
+  APP_NOT_FOUND: {
+    code: 40405,
+    message: '未找到应用'
+  },
   AUTH_EXPIRED: {
     code: 40101,
     message: '登录信息已经过期，请重新登录'

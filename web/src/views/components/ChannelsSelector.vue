@@ -24,12 +24,9 @@ export default defineComponent({
     options() {
       const arr = [{
         label: '主渠道（无渠道参数时使用）',
-        value: 0,
+        value: 'main',
       }];
-      arr.push(...this.list.map((item) => ({
-        label: item.name,
-        value: item.id,
-      })));
+      arr.push(...this.list);
       return arr;
     },
   },

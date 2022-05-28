@@ -108,7 +108,7 @@
 </template>
 
 <script lang="ts">
-import api, { LoadStatus, apiRoot, getAuthHeaders } from '@/api';
+import api, { LoadStatus, apiRoot, getAuthHeaders, IKeyValue } from '@/api';
 import common from '@/utils/common';
 import { message, Modal } from 'ant-design-vue';
 import { createVNode, defineComponent, onMounted, reactive, ref } from 'vue'
@@ -119,7 +119,6 @@ import { useRoute } from 'vue-router';
 import { IAppInfo } from '@/api/app';
 import ChannelsSelector from './components/ChannelsSelector.vue';
 import PostRules from './components/PostRules.vue';
-import { IChannelInfo } from '@/api/channel';
 import { FileInfo, FileItem } from '@/models/FileUpload';
 
 export default defineComponent({
@@ -141,13 +140,13 @@ export default defineComponent({
       {
         dataIndex: 'version_name',
         key: 'version_name',
-        title: '更新名称',
+        title: '更新版本号',
         sorter: true,
       },
       {
         dataIndex: 'version_code',
         key: 'version_code',
-        title: '版本号',
+        title: '版本代码',
         sorter: true,
       },
       {
@@ -191,7 +190,7 @@ export default defineComponent({
     const isNew = ref(false);
 
     const fileList = ref([]);
-    const channelNames = ref<IChannelInfo[]>([]); 
+    const channelNames = ref<IKeyValue>([]); 
     const appNames = ref<IAppInfo[]>([]); 
 
     const route = useRoute();
@@ -261,7 +260,13 @@ export default defineComponent({
       api.app.getList().then((data) => appNames.value = data.data || []).catch((e) => message.warn('获取组数据失败！' + e));
     }
     function loadChannelNames() {
-      api.channel.getList().then((data) => channelNames.value = data.data || []).catch((e) => message.warn('获取渠道数据失败！' + e));
+      api.channel.getList({ full: true }).then((data) => {
+        
+        channelNames.value = data.data?.map((k) => ({
+          label: `${k.name} (${k.code})`,
+          value: k.code,
+        })) || [];
+      }).catch((e) => message.warn('获取渠道数据失败！' + e));
     }
 
     const handleSearch = () => { 

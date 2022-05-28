@@ -384,6 +384,23 @@ export class QueryGenerator {
   }
 
   /**
+   * 禁用自动Select
+   * @returns 
+   */
+  public disableAutoSelectCondition() {
+    this.disableSelectCondition = true;
+    return this;
+  }
+  /**
+   * 启用自动Select
+   * @returns 
+   */
+  public enableAutoSelectCondition() {
+    this.disableSelectCondition = false;
+    return this;
+  }
+
+  /**
    * 进行分页查询数据
    * @param pageNumber 页数，从1开始
    * @param pageSize 页大小
@@ -392,8 +409,7 @@ export class QueryGenerator {
     return new Promise<CommonPageResult<T>>((resolve, reject) => {
       let { whereCondition, orderByCondition, groupByCondition, limitCondition } = this.makeCondition();
       let selectCondition = this.makeSelectCondition();
-      let sql = this.makeSelectSql(`SELECT ${selectCondition}` + 
-        (selectCondition.indexOf('FROM') > 0 || selectCondition.indexOf('from') > 0 ? '' : `FROM \`${this.tableName}\``), 
+      let sql = this.makeSelectSql(this.disableSelectCondition ? selectCondition : `SELECT ${selectCondition} FROM \`${this.tableName}\``, 
         whereCondition, orderByCondition, groupByCondition, limitCondition);
       
       if(this.enableLogSQL) logger.log('Query', sql);
@@ -491,6 +507,7 @@ export class QueryGenerator {
 
   private selectFields = new Array<QuerySelectField>();
   private lastSelectCondition = '';
+  private disableSelectCondition = false;
 
   private makeSelectCondition() {
     if(this.lastSelectCondition === '') {
@@ -503,7 +520,7 @@ export class QueryGenerator {
       let ols = this.selectFields.join(',');
       this.lastSelectCondition = 
         (this.addDistinct ? 'DISTINCT ' : '') + 
-        (anyNonRawCondition ? '' : `\`${this.tableName}\`.*${(ols !== '' ? ',' : '')}`) + 
+        (this.disableSelectCondition || anyNonRawCondition ? '' : `\`${this.tableName}\`.*${(ols !== '' ? ',' : '')}`) + 
         ols;
     }
     return this.lastSelectCondition;

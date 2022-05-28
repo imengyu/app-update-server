@@ -31,6 +31,9 @@ export class UpdateCotroller extends RestCotroller<Update> {
       this.commonResponse(req, res, this.UpdateService.uploadUpdateFile(req), 
         this.PermissionService.checkUserPermission(req, [ 'post-update' ]))
     );
+    app.get('/update-check', (req, res) => 
+      this.commonResponse(req, res, this.UpdateService.updateCheckCore(req))
+    );
     super.bindAll(app);
   }
 }

@@ -26,11 +26,13 @@ export class RestService<T> extends BaseService {
   protected beforeDelete : (req: Request, id: number, data: T) => void;
   protected afterDelete : (req: Request, id: number) => void;
   protected listField : string = 'name';
+  protected listKeyField : string = 'id';
 
-  public constructor(tableName : string, listField?: string) {
+  public constructor(tableName : string, listField?: string, listKeyField?: string) {
     super();
     this.tableName = tableName;
     if(listField) this.listField = listField;
+    if(listKeyField) this.listKeyField = listKeyField;
   }
 
   private solveQuerySearchParams(query : QueryGenerator, params ?: IQuerySearchParams) {
@@ -59,7 +61,7 @@ export class RestService<T> extends BaseService {
     return new Promise<T[]>((resolve, reject) => {
       let query = DB.table(this.tableName); 
       if(!full) 
-        query.select('id', this.listField)
+        query.select(this.listKeyField, this.listField)
       else
         query.select(...this.selectableFields);
       this.solveQuerySearchParams(query, params);
