@@ -148,7 +148,7 @@ export class RestService<T> extends BaseService {
       if(typeof this.insertSolve === 'function')
         this.insertSolve(req, query);
       query.insertGetId(data, this.updateableFields).then((id) => {
-        if(typeof this.afterUpdate === 'function')
+        if(typeof this.afterInsert === 'function')
           this.afterInsert(req, id, data);
         resolve(id);
       }).catch((err) => {
