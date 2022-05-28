@@ -17,6 +17,11 @@ var StringUtils = {
     var pos = path.lastIndexOf('/');
     if(pos < 0) pos = path.lastIndexOf('\\');
     return path.substring(pos + 1);  
+  },
+  getFileExt(path : string) {
+    var pos = path.lastIndexOf('.');
+    if(pos < 0) pos = path.lastIndexOf('.');
+    return path.substring(pos + 1);  
   }
 }
 

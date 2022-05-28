@@ -5,6 +5,7 @@ import { Controller } from '../small/base/Controller';
 import { Autowired } from '../small/base/Autowired';
 import { PermissionService } from '../services/PermissionService';
 import { RestCotroller } from '../small/base/RestController';
+import { uploadFiles } from '../app';
 
 @Controller
 export class UpdateCotroller extends RestCotroller<Update> {
@@ -26,6 +27,10 @@ export class UpdateCotroller extends RestCotroller<Update> {
     }
   }
   bindAll(app : Express) {
+    app.post('/update-file-post', uploadFiles.single('file'), (req, res) => 
+      this.commonResponse(req, res, this.UpdateService.uploadUpdateFile(req), 
+        this.PermissionService.checkUserPermission(req, [ 'post-update' ]))
+    );
     super.bindAll(app);
   }
 }

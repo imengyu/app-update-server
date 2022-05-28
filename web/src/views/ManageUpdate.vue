@@ -3,7 +3,7 @@
     <!--查询表单-->
     <a-form ref="formSearch" class="vc-search-form" :model="formSearchState" layout="inline">
       <div class="float-left d-flex flex-row text-left">
-        <a-button type="primary" @click="handleNew">
+        <a-button type="primary" @click="handleNew" :disabled="!formSearchState.app_id">
           <template #icon><PlusOutlined /></template>
           发布更新
         </a-button>
@@ -11,13 +11,13 @@
           <a-select-option v-for="(n, i) in appNames" :key="i" :value="n.id" :name="n.name">{{ n.name }}</a-select-option>
         </a-select>
       </div>
-      <a-form-item label="搜索发布版本" name="version_name">
+      <a-form-item v-if="formSearchState.app_id" label="搜索发布版本" name="version_name">
         <a-input v-model:value="formSearchState.version_name" />
       </a-form-item>
-      <a-form-item label="搜索版本号" name="version_code">
+      <a-form-item v-if="formSearchState.app_id" label="搜索版本号" name="version_code">
         <a-input v-model:value="formSearchState.version_code" />
       </a-form-item>
-      <a-form-item>
+      <a-form-item v-if="formSearchState.app_id">
         <a-button type="primary" @click="handleSearch">搜索</a-button>
         <a-button class="ml-3" @click="handleSearchReset">清空</a-button>
       </a-form-item>
@@ -32,6 +32,11 @@
       :loading="dataLoadStatus=='loading'"
       v-if="formSearchState.app_id && dataLoadStatus=='success'||dataLoadStatus=='loading'"
       @change="handleTableChange">
+      <template #status="{ record }">
+        <a-badge v-if="record.status=='enabled'" status="success" text="正常" />
+        <a-badge v-else-if="record.status=='disabled'" status="error" text="暂停更新" />
+        <a-badge v-else status="warning" text="未知" />
+      </template>
       <template #action="{ record }">
         <span>
           <a @click="handleEdit(record)">编辑</a>
@@ -45,29 +50,48 @@
       <h1>数据加载失败</h1>
       <a-button type="link" @click="loadTableData">重试</a-button>
     </div>
+    <div v-else-if="!formSearchState.app_id" class="error" style="padding: 100px 30px;margin-top: 50px;">
+      <icon-font style="font-size:3em" type="icon-edit-1"/>
+      <h1>在左上角选择你要发布更新的应用</h1>
+    </div>
     <!--编辑对话框-->
-    <a-modal v-model:visible="visibleEditDialog" :title="(isNew?'添加':'编辑')+'更新'" @ok="handleEditOk" width="80%">
+    <a-modal v-model:visible="visibleEditDialog" :title="(isNew?'发布':'编辑')+'更新'" @ok="handleEditOk" width="70%">
       <a-form ref="formEdit" :model="formEditState" :rules="formEditRules" :label-col="labelCol" :wrapper-col="wrapperCol">
-        <a-form-item label="版本名字（给用户看的，例如1.0.0）" name="version_name">
-          <a-input v-model:value="formEditState.version_name" />
+        <a-form-item label="版本名字（给用户看的）" name="version_name">
+          <a-input v-model:value="formEditState.version_name" placeholder="给用户看的版本名字，例如1.0.0" />
         </a-form-item>
-        <a-form-item label="版本号（用于程序判断，是数字）" type="number" name="version_code">
-          <a-input v-model:value="formEditState.version_code" />
+        <a-form-item label="版本号（用于程序判断，是数字）" name="version_code">
+          <a-input-number v-model:value="formEditState.version_code" placeholder="版本号，例如 20053" :min="0" style="width: 200px;" />
         </a-form-item>
         <a-form-item label="更新内容文案" name="post_note">
-          <a-textarea v-model:value="formEditState.version_code" showCount :maxlength="255"></a-textarea>
+          <a-textarea v-model:value="formEditState.post_note" showCount :maxlength="255"></a-textarea>
         </a-form-item>
         <a-form-item label="推送渠道" name="post_channels">
-
+          <ChannelsSelector v-model:value="formEditState.post_channels" :list="channelNames" />
         </a-form-item>
-        <a-form-item label="推送版本号条件" name="post_version_code_mask">
-          <a-input v-model:value="formEditState.post_version_code_mask" />
+        <a-form-item label="推送条件" name="post_version_code_mask">
+          <PostRules ref="refPostRules" v-model:value="formEditState.post_version_code_mask" />
         </a-form-item>
-        <a-form-item label="推送版本号版本号匹配正则" name="post_version_name_mask">
+        <a-form-item v-if="false" label="推送版本号(用户)匹配正则" name="post_version_name_mask">
           <a-input v-model:value="formEditState.post_version_name_mask" />
         </a-form-item>
         <a-form-item label="更新安装包下载URL" name="update_package_url">
           <a-input v-model:value="formEditState.update_package_url" />
+          <a-upload
+            v-model:file-list="fileList"
+            name="file"
+            :multiple="false"
+            :action="apiRoot+'update-file-post'"
+            :headers="getAuthHeaders()"
+            :beforeUpload="beforeFileUpload"
+            :data="getUploadFileData"
+            @change="handleUploadChange"
+          >
+            <a-button>
+              <upload-outlined></upload-outlined>
+              上传到本地存储库
+            </a-button>
+          </a-upload>
         </a-form-item>
         <a-form-item v-if="false" label="更新安装包下载URL（热更新）" name="update_hot_update_url">
           <a-input v-model:value="formEditState.update_hot_update_url" />
@@ -84,19 +108,26 @@
 </template>
 
 <script lang="ts">
-import api, { LoadStatus } from '@/api';
+import api, { LoadStatus, apiRoot, getAuthHeaders } from '@/api';
 import common from '@/utils/common';
 import { message, Modal } from 'ant-design-vue';
 import { createVNode, defineComponent, onMounted, reactive, ref } from 'vue'
 import { Pagination, TableStateFilters } from '../models/TableCommon'
-import { ExclamationCircleOutlined, PlusOutlined } from '@ant-design/icons-vue'
+import { ExclamationCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons-vue'
 import { IUpdateInfo } from '@/api/update';
 import { useRoute } from 'vue-router';
 import { IAppInfo } from '@/api/app';
+import ChannelsSelector from './components/ChannelsSelector.vue';
+import PostRules from './components/PostRules.vue';
+import { IChannelInfo } from '@/api/channel';
+import { FileInfo, FileItem } from '@/models/FileUpload';
 
 export default defineComponent({
   components: {
     PlusOutlined,
+    UploadOutlined,
+    ChannelsSelector,
+    PostRules,
   },
   name: 'ManageChannel',
   setup: () => {
@@ -126,7 +157,12 @@ export default defineComponent({
         sorter: true,
       },
       {
-        dataIndex: 'status',
+        dataIndex: 'post_note',
+        key: 'post_note',
+        title: '更新简介',
+      },
+      {
+        slots: { customRender: 'status' },
         key: 'status',
         title: '更新状态',
       },
@@ -154,11 +190,14 @@ export default defineComponent({
     const visibleEditDialog = ref(false);
     const isNew = ref(false);
 
+    const fileList = ref([]);
+    const channelNames = ref<IChannelInfo[]>([]); 
     const appNames = ref<IAppInfo[]>([]); 
 
     const route = useRoute();
 
     const formSearch = ref();
+    const refPostRules = ref();
     const formSearchState = reactive({
       version_name: '',
       version_code: '',
@@ -169,6 +208,7 @@ export default defineComponent({
     const formEditState = reactive<IUpdateInfo>({
       date: new Date().format(),
       status: 'enabled',
+      id: 0,
       app_id: formSearchState.app_id || 0,
       post_note: '',
       post_channels: '',
@@ -185,7 +225,7 @@ export default defineComponent({
         { max: 30, message: '名称必须小于30个字符', trigger: 'blur' },
       ],
       version_code: [
-        { required: true, message: '请输入版本号', trigger: 'blur' },
+        { required: true, message: '请输入版本号', trigger: 'blur', type: 'number' },
       ],
       update_package_url: [
         { required: true, message: '请输入更新安装包下载URL', trigger: 'blur' },
@@ -220,6 +260,9 @@ export default defineComponent({
     function loadGroupNames() {
       api.app.getList().then((data) => appNames.value = data.data || []).catch((e) => message.warn('获取组数据失败！' + e));
     }
+    function loadChannelNames() {
+      api.channel.getList().then((data) => channelNames.value = data.data || []).catch((e) => message.warn('获取渠道数据失败！' + e));
+    }
 
     const handleSearch = () => { 
       loadTableData(1); 
@@ -237,6 +280,7 @@ export default defineComponent({
     };
     const handleEditOk = () => {
       formEdit.value.validate().then(() => {
+        formEditState.post_version_code_mask = refPostRules.value.getValue();
         if(isNew.value) {
           api.update.add(formEditState).then((data) => {
             message.success('新建更新成功');
@@ -300,9 +344,47 @@ export default defineComponent({
       formEditState.update_hot_update_url = '';
     };
 
+    function handleUploadChange(info: FileInfo) {
+      if (info.file.status !== 'uploading') {
+        console.log(info.file, info.fileList);
+      }
+      if (info.file.status === 'done') {
+        console.log(info.file.response);
+        formEditState.update_package_url = (info.file.response as any).data.path;
+        message.success(`${info.file.name} 上传成功`);
+      } else if (info.file.status === 'error') {
+        message.error(`${info.file.name} 上传失败.`);
+      }
+    }
+
+    let uploadHeadKey = '';
+    function beforeFileUpload(file: FileItem)  {
+      const fileAccept = file.type === 'application/vnd.android.package-archive';
+      if (!fileAccept)
+        message.error('请上传 apk 格式安装包 !');
+      const isLt256M = file.size / 1024 / 1024 < 256;
+      if (!isLt256M) 
+        message.error('安装包大小必须小于 256MB!');
+      return new Promise<void>((resolve, reject) => {
+        if(fileAccept && isLt256M) {
+          api.user.getUserUploadKey().then((key) => {
+            if(key.data)
+              uploadHeadKey = key.data.key;
+            resolve();
+          }).catch(reject);
+        } else reject();
+      });  
+    }
+    function getUploadFileData() {
+      return {
+        key: uploadHeadKey
+      }
+    }
+
     onMounted(() => {
       if (formSearchState.app_id)
         loadTableData(1);
+      loadChannelNames();
       loadGroupNames();
     });
 
@@ -322,7 +404,16 @@ export default defineComponent({
       formEditRules,
 
       isNew,
+      channelNames,
       appNames,
+      refPostRules,
+
+      apiRoot,
+      fileList,
+      handleUploadChange,
+      beforeFileUpload,
+      getUploadFileData,
+      getAuthHeaders,
 
       labelCol: { span: 6 },
       wrapperCol: { span: 14 },

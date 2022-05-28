@@ -121,8 +121,8 @@ export default defineComponent({
         return;
       }
       if (info.file.status === 'done') {
-        if(info.file.response && (<any>info.file.response).data)
-          uploadHeadImageUrl.value = (<any>info.file.response).data.path;
+        if(info.file.response && (info.file.response as any).data)
+          uploadHeadImageUrl.value = (info.file.response as any).data.path;
         uploadHeadLoading.value = false;
       }
       if (info.file.status === 'error') {
@@ -147,7 +147,7 @@ export default defineComponent({
         }else reject();
       });  
     };
-    const getUploadHeadData = (o : object) => {
+    const getUploadHeadData = () => {
       return {
         key: uploadHeadKey
       }
@@ -187,7 +187,7 @@ export default defineComponent({
       api.user.updateUserInfo(formProfileState as IUserInfo, userInfo.value.id).then(() => {
         message.success('更新个人信息成功！');
         updateProfileSubmiting.value = false;
-      }).catch((e : ApiError<IEmpty>) => {
+      }).catch((e: ApiError<IEmpty>) => {
         message.error('更新个人信息失败！' + e);
         updateProfileSubmiting.value = false;
       });
@@ -201,7 +201,7 @@ export default defineComponent({
 
     onMounted(() => {
       setTimeout(() => {
-        let val = userInfo.value as IUserInfo;
+        const val = userInfo.value as IUserInfo;
         if(val) {
           formProfileState.name = val.name;
           formProfileState.sex = val.sex;

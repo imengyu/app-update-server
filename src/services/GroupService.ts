@@ -9,7 +9,7 @@ import { Service } from "../small/base/Service";
 export class GroupService extends RestService<Group> {
   public constructor() {
     super('group', 'name');
-    this.selectSolve = (query) => query.selectRaw('(select count(`user`.id) from `user` where `group`.`id`=`user`.group_id) user_count')
+    this.selectSolve = (req, query) => query.selectRaw('(select count(`user`.id) from `user` where `group`.`id`=`user`.group_id) user_count')
   }
 }
 

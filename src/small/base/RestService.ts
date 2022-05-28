@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import { DB } from "../database/DB";
 import { CommonPageResult } from "../model/CommonModel";
 import { PromiseResponseRejectInfo, ResposeCode } from "../utils/http-response";
@@ -16,10 +17,14 @@ export class RestService<T> extends BaseService {
 
   protected selectableFields : string[] = [];
   protected updateableFields : string[]  = [];
-  protected selectSolve : (query : QueryGenerator) => void;
-  protected updateSolve : (query : QueryGenerator) => void;
-  protected insertSolve : (query : QueryGenerator) => void;
-  protected deleteSolve : (query : QueryGenerator) => void;
+  protected selectSolve : (req: Request, query : QueryGenerator) => void;
+  protected updateSolve : (req: Request, query : QueryGenerator) => void;
+  protected insertSolve : (req: Request, query : QueryGenerator) => void;
+  protected deleteSolve : (req: Request, query : QueryGenerator) => void;
+  protected afterUpdate : (req: Request, id: number, data: T) => void;
+  protected afterInsert : (req: Request, id: number, data: T) => void;
+  protected beforeDelete : (req: Request, id: number, data: T) => void;
+  protected afterDelete : (req: Request, id: number) => void;
   protected listField : string = 'name';
 
   public constructor(tableName : string, listField?: string) {
@@ -50,7 +55,7 @@ export class RestService<T> extends BaseService {
     return query;
   }
 
-  public getList(params?: IQuerySearchParams, full = false) {
+  public getList(req: Request, params?: IQuerySearchParams, full = false) {
     return new Promise<T[]>((resolve, reject) => {
       let query = DB.table(this.tableName); 
       if(!full) 
@@ -59,7 +64,7 @@ export class RestService<T> extends BaseService {
         query.select(...this.selectableFields);
       this.solveQuerySearchParams(query, params);
       if(typeof this.selectSolve === 'function')
-        this.selectSolve(query);
+        this.selectSolve(req, query);
       query.get<T>().then((result) => {
         resolve(result);
       }).catch((err) => {
@@ -68,13 +73,13 @@ export class RestService<T> extends BaseService {
       })
     });
   }
-  public get(id: number, field?: string) {
+  public get(req: Request, id: number, field?: string) {
     return new Promise<T>((resolve, reject) => {
       let query = DB.table(this.tableName).where('id', id);
       if(field) query.select(field);
       else query.select(...this.selectableFields);
       if(typeof this.selectSolve === 'function')
-        this.selectSolve(query);
+        this.selectSolve(req, query);
       query.first<T>().then((result) => {
         if(result) resolve(result);
         else reject({ errCode: ResposeCode.RES_NOT_FOUND } as PromiseResponseRejectInfo)
@@ -84,7 +89,7 @@ export class RestService<T> extends BaseService {
       })
     });
   }
-  public exists(id: number) {
+  public exists(req: Request, id: number) {
     return new Promise<boolean>((resolve, reject) => {
       let query = DB.table(this.tableName).where('id', id);
       query.exists().then((result) => {
@@ -95,12 +100,12 @@ export class RestService<T> extends BaseService {
       })
     });
   }
-  public getPage(index: number, size: number, params?: IQuerySearchParams) {
+  public getPage(req: Request, index: number, size: number, params?: IQuerySearchParams) {
     return new Promise<CommonPageResult<T>>((resolve, reject) => {
       let query = DB.table(this.tableName).select(...this.selectableFields).limit((index - 1) * size, size)
       this.solveQuerySearchParams(query, params);
       if(typeof this.selectSolve === 'function') 
-        this.selectSolve(query);
+        this.selectSolve(req, query);
       query.paginate<T>(index, size).then((data) => {
         resolve(data);
       }).catch((err) => {
@@ -109,15 +114,19 @@ export class RestService<T> extends BaseService {
       })
     });
   }
-  public update(id: number, data : T) {
+  public update(req: Request, id: number, data : T) {
     return new Promise<void>((resolve, reject) => {
-      let query = DB.table(this.tableName).where('id', id).enableLog();
+      let query = DB.table(this.tableName).where('id', id);
       if(typeof this.updateSolve === 'function')
-        this.updateSolve(query);
+        this.updateSolve(req, query);
       query.exists().then((exists) => {
         if(exists) {
           query.update(data, this.updateableFields)
-            .then(() => resolve())
+            .then(() => {
+              if(typeof this.afterUpdate === 'function')
+                this.afterUpdate(req, id, data);
+              resolve();
+            })
             .catch((err) => {
               logger.error('RestService.update', err);
               reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo)
@@ -131,12 +140,14 @@ export class RestService<T> extends BaseService {
       })
     });
   }
-  public insert(data : T) {
+  public insert(req: Request, data : T) {
     return new Promise<number>((resolve, reject) => {
       let query = DB.table(this.tableName);
       if(typeof this.insertSolve === 'function')
-        this.insertSolve(query);
+        this.insertSolve(req, query);
       query.insertGetId(data, this.updateableFields).then((id) => {
+        if(typeof this.afterUpdate === 'function')
+          this.afterInsert(req, id, data);
         resolve(id);
       }).catch((err) => {
         logger.error('RestService.insert', err);
@@ -144,19 +155,32 @@ export class RestService<T> extends BaseService {
       })
     });
   }
-  public delete(id: number) {
+  public delete(req: Request, id: number) {
     return new Promise<void>((resolve, reject) => {
       let query = DB.table(this.tableName).where('id', id);
       if(typeof this.deleteSolve === 'function')
-        this.deleteSolve(query);
+        this.deleteSolve(req, query);
       query.exists().then((exists) => {
         if(exists) {
-          query.delete().then(() => {
-            resolve();
-          }).catch((err) => {
-            logger.error('RestService.delete', err);
-            reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo)
-          })
+          const doDel = () => {
+            query.delete().then(() => {
+              if(typeof this.afterDelete === 'function')
+                this.afterDelete(req, id);
+              resolve();
+            }).catch((err) => {
+              logger.error('RestService.delete', err);
+              reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo)
+            })
+          };
+
+          if(typeof this.beforeDelete === 'function') {
+            query.where('id', id).first().then((data) => {
+              this.beforeDelete(req, id, data as T);
+              doDel();
+            })
+          } else {
+            doDel();
+          }
         } else {
           reject({ errCode: ResposeCode.RES_NOT_FOUND } as PromiseResponseRejectInfo)
         }

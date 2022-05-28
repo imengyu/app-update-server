@@ -392,7 +392,8 @@ export class QueryGenerator {
     return new Promise<CommonPageResult<T>>((resolve, reject) => {
       let { whereCondition, orderByCondition, groupByCondition, limitCondition } = this.makeCondition();
       let selectCondition = this.makeSelectCondition();
-      let sql = this.makeSelectSql(`SELECT ${selectCondition} FROM \`${this.tableName}\``, 
+      let sql = this.makeSelectSql(`SELECT ${selectCondition}` + 
+        (selectCondition.indexOf('FROM') > 0 || selectCondition.indexOf('from') > 0 ? '' : `FROM \`${this.tableName}\``), 
         whereCondition, orderByCondition, groupByCondition, limitCondition);
       
       if(this.enableLogSQL) logger.log('Query', sql);

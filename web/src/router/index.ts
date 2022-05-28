@@ -48,6 +48,11 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import(/* webpackChunkName: "channel" */ '../views/ManageChannel.vue')
       },
       {
+        path: 'ManageStorage',
+        name: 'ManageStorage',
+        component: () => import(/* webpackChunkName: "manageStorage" */ '../views/ManageStorage.vue')
+      },
+      {
         path: 'DataView',
         name: 'DataView',
         component: () => import(/* webpackChunkName: "dataView" */ '../views/DataView.vue')

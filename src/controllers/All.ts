@@ -1,3 +1,4 @@
+import StorageCotroller from './StorageCotroller';
 import UpdateCotroller from './UpdateCotroller';
 import ChannelCotroller from './ChannelCotroller';
 import AppCotroller from './AppCotroller';
@@ -17,5 +18,6 @@ export function useAllControllers() {
     AppCotroller,
     ChannelCotroller,
     UpdateCotroller,
+    StorageCotroller,
   }
 }

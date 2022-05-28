@@ -5,6 +5,7 @@ import AuthService from './AuthService'
 import PermissionService from './PermissionService'
 import UserService from './UserService'
 import GroupService from './GroupService'
+import StorageService from './StorageService'
 
 export function useAllServices() {
   return {
@@ -15,5 +16,6 @@ export function useAllServices() {
     AppService,
     ChannelService,
     UpdateService,
+    StorageService,
   }
 }

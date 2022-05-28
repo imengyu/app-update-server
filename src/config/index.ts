@@ -8,6 +8,7 @@ const devConfig = {
   AUTH_DEF_EXPIRE_TIME: 80000 * 1000,//1day
   AUTH_MAX_EXPIRE_TIME: 2592000 * 1000,//30day
   VERSION: '1.0.32',
+  PUBLIC_URL: 'http://localhost:3011',
   PORT: 3011,
 };
 const proConfig = {
@@ -20,8 +21,9 @@ const proConfig = {
   AUTH_DEF_EXPIRE_TIME: 80000 * 1000,//1day
   AUTH_MAX_EXPIRE_TIME: 2592000 * 1000,//30day
   VERSION: '1.0.32',
+  PUBLIC_URL: 'http://localhost:3011',
   PORT: 3011,
 };
-const config = process.env.NODE_ENV === 'production' ? proConfig : devConfig;
+const config = process.env.NODE_ENV === 'production' ? (global.__NODEJS_REQUIRE__('./config/config.json') || proConfig) : devConfig;
 
 export default config

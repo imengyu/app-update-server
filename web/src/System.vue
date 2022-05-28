@@ -37,6 +37,10 @@
                 <UploadOutlined />
                 <span>更新管理</span>
               </a-menu-item>
+              <a-menu-item key="ManageStorage">
+                <CodeSandboxOutlined />
+                <span>本地存储管理</span>
+              </a-menu-item>
               <a-menu-item key="DataView">
                 <AreaChartOutlined />
                 <span>数据查看</span>
@@ -106,6 +110,7 @@ import {
   ApartmentOutlined,
   AndroidOutlined,
   UploadOutlined,
+  CodeSandboxOutlined,
 } from '@ant-design/icons-vue';
 import { Modal } from "ant-design-vue";
 import { useStore } from "vuex";
@@ -125,6 +130,7 @@ export default defineComponent({
     ApartmentOutlined,
     AndroidOutlined,
     UploadOutlined,
+    CodeSandboxOutlined,
   },
   setup() {
 

@@ -7,6 +7,7 @@ import app from './app'
 import channel from './channel'
 import permission from './permission'
 import update from './update'
+import storage from './storage'
 import store from '../store';
 import common from '@/utils/common';
 
@@ -21,9 +22,22 @@ const instance = axios.create({
 const apiKey = process.env.NODE_ENV === "development" ? config.api.dev.API_KEY : config.api.prod.API_KEY
 const devUid = common.getDeviceUid();
 
+export function getAuthHeaders(): IKeyValue {
+  return {
+    Authorization:  JSON.stringify({
+      auth: store ? store.state.authKName: '',
+      validity: store ? store.state.authKVal : '',
+      nonce: common.randomNumberString(10),
+      identifier: devUid,
+      key: apiKey,
+    } as IAuthStruct)
+  };
+}
+
 //添加身份认证
 instance.interceptors.request.use((value) => {
-  if(!value.headers) value.headers = {};
+  if(!value.headers) 
+    value.headers = {};
 
   //添加附加参数
   if(value.url) {
@@ -35,17 +49,12 @@ instance.interceptors.request.use((value) => {
   }
 
   //添加认证参数
-  value.headers.Authorization = JSON.stringify({
-    auth: store ? store.state.authKName: '',
-    validity: store ? store.state.authKVal : '',
-    nonce: common.randomNumberString(10),
-    identifier: devUid,
-    key: apiKey,
-  } as IAuthStruct);
+  const headers = getAuthHeaders();
+  for(const key in headers)
+    value.headers[key] = headers[key];
 
   return value;
 });
-
 
 /**
  * 通用分页返回结构
@@ -96,5 +105,6 @@ export default {
   app,
   update,
   channel,
+  storage,
   getAxios,
 }

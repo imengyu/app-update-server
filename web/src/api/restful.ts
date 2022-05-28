@@ -2,8 +2,8 @@ import common from '@/utils/common';
 import { getAxios, ICommonPageResult, IEmpty, IKeyValue } from '.';
 import { commonRequest } from './common';
 
-export function buildParams(params : Array<string>) {
-  var rs = '';
+export function buildParams(params: Array<string>) {
+  let rs = '';
   if(params && params.length > 0) {
     for(let i = 0; i < params.length; i++) {
       if(i == 0) rs = params[i];
@@ -12,10 +12,11 @@ export function buildParams(params : Array<string>) {
   }
   return rs
 }
-export function buildSearchKeyPars(querys : QueryParams) {
-  var rs = '';
+export function buildSearchKeyPars(querys: QueryParams) {
+  let rs = '';
   if(querys) {
-    var keys = Object.keys(querys), j = 0;
+    const keys = Object.keys(querys);
+    let j = 0;
     for(let i = 0; i < keys.length; i++) {
       let obj = querys[keys[i]];
       if(!common.isNullOrEmpty(obj)) {
@@ -33,19 +34,19 @@ export interface QueryParams {
   sort?: {
     field: string|undefined;
     order: 'ascend'|'descend'|string|undefined;
-  },
+  };
   search?: {
     [index: string]: string|number|boolean|{
-      fuzzy: boolean,
-      value: string
+      fuzzy: boolean;
+      value: string;
     }|undefined;
-  },
+  };
   filter?: {
     [index: string]: any[]|undefined;
-  },
-  full?: boolean,
+  };
+  full?: boolean;
 
-  [index:string]: any|undefined,
+  [index: string]: any|undefined;
 }
 
 /**
@@ -56,17 +57,17 @@ export class RestfulApi<T> {
   /**
    * api 子路径
    */
-  public subResKey : string;
+  public subResKey: string;
 
   /**
    * 创建 通用资源请求类
    * @param subResKey api 子路径
    */
-  public constructor(subResKey : string) {
+  public constructor(subResKey: string) {
     this.subResKey = subResKey;
   }
 
-  protected buildSearchKeyPars(querys : QueryParams) {
+  protected buildSearchKeyPars(querys: QueryParams) {
     return buildSearchKeyPars(querys);
   }
   protected buildParams(params: string[]) {
@@ -76,7 +77,7 @@ export class RestfulApi<T> {
   /**
    * 获取 {id, name} 快速索引结构
    */
-  public getList(querys : QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
+  public getList(querys: QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
     return commonRequest<T[]>(getAxios().get(`/${this.subResKey}` +
       buildParams(prependParams) + 
       `/list/` + 
@@ -89,7 +90,7 @@ export class RestfulApi<T> {
    * @param pageSize 页大小
    * @param searchKeys 搜索筛选键值
    */
-  public getPage(page : number, pageSize : number, querys : QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
+  public getPage(page: number, pageSize: number, querys: QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
     return commonRequest<ICommonPageResult<T>>(getAxios().get(`/${this.subResKey}` +
       buildParams(prependParams) + 
       `/${page}/${pageSize}/` + 
@@ -100,7 +101,7 @@ export class RestfulApi<T> {
    * 请求资源
    * @param id 资源ID
    */
-  public get(id : number, querys : QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
+  public get(id: number, querys: QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
     return commonRequest<T>(
       getAxios().get(`/${this.subResKey}` + 
         buildParams(prependParams) + `/${id}` + buildParams(appendParams) + 
@@ -110,7 +111,7 @@ export class RestfulApi<T> {
    * 添加资源
    * @param data 资源数据
    */
-  public add(data : T|IKeyValue, querys : QueryParams = {}, appendParams: string[] = []) {
+  public add(data: T|IKeyValue, querys: QueryParams = {}, appendParams: string[] = []) {
     return commonRequest<number>(getAxios().post(`/${this.subResKey}` + buildParams(appendParams) + 
       buildSearchKeyPars(querys), data));
   }
@@ -119,7 +120,7 @@ export class RestfulApi<T> {
    * @param id 资源ID
    * @param data 资源数据
    */
-  public update(id : number, data : T|IKeyValue, querys : QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
+  public update(id: number, data: T|IKeyValue, querys: QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
     return commonRequest<IEmpty>(getAxios().put(`/${this.subResKey}` + 
       buildParams(prependParams) + `/${id}` + buildParams(appendParams) + 
       buildSearchKeyPars(querys), data));
@@ -128,7 +129,7 @@ export class RestfulApi<T> {
    * 删除资源
    * @param id 资源ID
    */
-  public delete(id : number, querys : QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
+  public delete(id: number, querys: QueryParams = {}, appendParams: string[] = [], prependParams: string[] = []) {
     return commonRequest<IEmpty>(getAxios().delete(`/${this.subResKey}` + 
       buildParams(prependParams) + `/${id}` + buildParams(appendParams) + 
       buildSearchKeyPars(querys)));
