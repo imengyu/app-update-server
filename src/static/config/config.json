@@ -2,6 +2,7 @@
   "REDIS_ADDRESS": "127.0.0.1",
   "REDIS_PORT": 6379,
   "REDIS_PASS": "",
+  "REDIS_DB": 0,
   "DB_FILAE_NAME": "updateServer.db",
   "AUTH_KEY": "W+JAwCTvlZhapJC5",
   "AUTH_IV": "e4e1825d5c306ec9",

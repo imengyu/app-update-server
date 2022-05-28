@@ -16,6 +16,7 @@ import { bindAllControllerBeans } from './small/base/Controller'
 import { useAllControllers } from './controllers/All'
 import { useAllMappings } from './mappings/All'
 import { useAllServices } from './services/All'
+import StringUtils from './utils/string';
 
 //配置logger
 logger.configure();
@@ -27,6 +28,8 @@ const RedisStore = connectRedis(session);
 const redisClient = redis.createClient({
   host: config.REDIS_ADDRESS,
   port: config.REDIS_PORT,
+  password: StringUtils.isNullOrEmpty(config.REDIS_PASS) ? undefined : config.REDIS_PASS,
+  db: config.REDIS_DB,
 })
 
 //配置上传器
