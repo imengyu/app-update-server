@@ -24,6 +24,6 @@ const proConfig = {
   PUBLIC_URL: 'http://localhost:3011',
   PORT: 3011,
 };
-const config = process.env.NODE_ENV === 'production' ? (global.__NODEJS_REQUIRE__('./config/config.json') || proConfig) : devConfig;
+const config = process.env.NODE_ENV === 'production' ? (eval('require(\'./config/config.json\')') || proConfig) : devConfig;
 
 export default config

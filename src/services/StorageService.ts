@@ -11,7 +11,7 @@ export class StorageService extends RestService<Storage> {
     super('storage', 'name');
 
     this.selectSolve = (req, query) => {
-      query.enableLog();
+      //query.enableLog();
       query.disableAutoSelectCondition();
       query.selectRaw('SELECT storage.*,`update`.version_name,`update`.app_id,`update`.version_code,app.name,user1.name as upload_user_name,user2.name as delete_user_name FROM storage ' 
       + 'LEFT JOIN `update` ON storage.using_status = `update`.id '

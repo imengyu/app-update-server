@@ -7,7 +7,7 @@ export default {
       API_KEY: '52c710ad727bb9344b3ed1125d5431f1',
     },
     prod: {
-      API_ROOT: 'https://imengyu.top/services/vcity-data-center/',
+      API_ROOT: '/',
       API_KEY: '52c710ad727bb9344b3ed1125d5431f1',
     },
   },

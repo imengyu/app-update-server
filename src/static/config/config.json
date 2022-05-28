@@ -1,0 +1,13 @@
+{
+  "REDIS_ADDRESS": "127.0.0.1",
+  "REDIS_PORT": 6379,
+  "REDIS_PASS": "",
+  "DB_FILAE_NAME": "updateServer.db",
+  "AUTH_KEY": "W+JAwCTvlZhapJC5",
+  "AUTH_IV": "e4e1825d5c306ec9",
+  "AUTH_DEF_EXPIRE_TIME": 80000000,
+  "AUTH_MAX_EXPIRE_TIME": 2592000000,
+  "VERSION": "1.0.32",
+  "PUBLIC_URL": "http://localhost:3012",
+  "PORT": 3012
+}
