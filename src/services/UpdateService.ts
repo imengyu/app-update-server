@@ -12,6 +12,7 @@ import { DB } from '../small/database/DB';
 import StringUtils from '../utils/string';
 import { redisClient } from '../app';
 import logger from '../utils/logger';
+import fs from 'fs';
 
 /**
  * 子系统相关服务
@@ -271,13 +272,17 @@ export class UpdateService extends RestService<Update> {
 
       this.UserService.uploadKeyToUserId(req).then((userId) => {        
         const relative_path = '/uploads/dists/' + req.file.filename + '.' + StringUtils.getFileExt(req.file.originalname); //绝对路径
-        let targetPath = config.PUBLIC_URL + relative_path; //绝对路径
+        const local_path = process.cwd() + relative_path; //绝对路径
+        let targetPath = config.PUBLIC_URL + relative_path; //本地路径
+
+        //重命名一下文件
+        fs.rename(process.cwd() + '/uploads/dists/' + req.file.filename, local_path, () => {});
 
         //存储库数据存储
         DB.table('storage').insert({
           date: new Date().format(),
           abs_path: targetPath,
-          local_path: process.cwd() + relative_path, //本地路径
+          local_path: local_path,
           using_status: 0,
           third_storage_path: null,
           upload_user_id: userId,
