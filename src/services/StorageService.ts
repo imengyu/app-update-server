@@ -1,6 +1,9 @@
+import fs from 'fs';
 import { Storage } from '../models/StorageModel';
 import { RestService } from "../small/base/RestService";
 import { Service } from "../small/base/Service";
+import logger from '../utils/logger';
+import StringUtils from '../utils/string';
 
 /**
  * 子系统相关服务
@@ -20,6 +23,19 @@ export class StorageService extends RestService<Storage> {
       + 'LEFT JOIN user AS user2 ON storage.delete_user_id = user2.id ');
       return query;
     }
+    //删除本地文件
+    this.beforeDelete = (req, id, data) => {
+      if (StringUtils.isNullOrEmpty(data.local_path)) {
+        fs.access(data.local_path, (err) => {
+          if (err === null) {
+            fs.rm(data.local_path, (err) => {
+              if (err)
+                logger.error('StorageService', `Failed to delete file ${data.local_path} (StorageId: ${id})`);
+            });
+          }
+        });
+      }
+    };
   }
 }
 

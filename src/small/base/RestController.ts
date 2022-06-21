@@ -60,7 +60,7 @@ export class RestCotroller<T> extends BaseController {
       this.commonResponse(
         req,
         res,
-        this.getRestService().getList(req, this.buildSearchParams(req), common.getBoolean(req.query.full as string)),
+        () => this.getRestService().getList(req, this.buildSearchParams(req), common.getBoolean(req.query.full as string)),
         this.getCheckPromise('get', req, res)
       )
     });
@@ -68,7 +68,7 @@ export class RestCotroller<T> extends BaseController {
       this.commonResponse(
         req,
         res,
-        this.getRestService().get(req, parseInt(req.params.id as string)),
+        () => this.getRestService().get(req, parseInt(req.params.id as string)),
         this.getCheckPromise('get', req, res)
       )
     });
@@ -76,7 +76,7 @@ export class RestCotroller<T> extends BaseController {
       this.commonResponse(
         req,
         res,
-        this.getRestService().getPage(req, parseInt(req.params.page as string), parseInt(req.params.size as string), this.buildSearchParams(req)),
+        () => this.getRestService().getPage(req, parseInt(req.params.page as string), parseInt(req.params.size as string), this.buildSearchParams(req)),
         this.getCheckPromise('getPage', req, res)
       )
     });
@@ -84,7 +84,7 @@ export class RestCotroller<T> extends BaseController {
       this.commonResponse(
         req,
         res,
-        this.getRestService().insert(req, req.body),
+        () => this.getRestService().insert(req, req.body),
         this.getCheckPromise('add', req, res),
         { body: true, query: [] }
       )
@@ -93,7 +93,7 @@ export class RestCotroller<T> extends BaseController {
       this.commonResponse(
         req,
         res,
-        this.getRestService().update(req, parseInt(req.params.id as string), req.body),
+        () => this.getRestService().update(req, parseInt(req.params.id as string), req.body),
         this.getCheckPromise('update', req, res),
         { body: true, query: [] }
       )
@@ -102,7 +102,7 @@ export class RestCotroller<T> extends BaseController {
       this.commonResponse(
         req,
         res,
-        this.getRestService().delete(req, parseInt(req.params.id as string)),
+        () => this.getRestService().delete(req, parseInt(req.params.id as string)),
         this.getCheckPromise('delete', req, res)
       )
     });

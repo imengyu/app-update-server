@@ -48,7 +48,7 @@ export class BaseController implements ControllerInterface {
    * @param customFailedReturnData 自定义失败返回数据
    */
   protected commonResponse(req : Request, res : Response, 
-    promise : Promise<any>, preCheck : Promise<any>|null|undefined  = null, 
+    promise : () => Promise<any>, preCheck : Promise<any>|null|undefined  = null, 
     requiredInput : ControllerInputCheck|null = null, 
     customFailedReturnData : object|null = null) {
 
@@ -71,7 +71,7 @@ export class BaseController implements ControllerInterface {
 
     //处理
     let doSolve = () => {
-      promise
+      promise()
         .then((v) => common.sendSuccess(res, v))
         .catch((e) => this.commonResponseCatchHandler(res, e, customFailedReturnData));
     };

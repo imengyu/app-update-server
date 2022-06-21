@@ -19,7 +19,7 @@ export class PermissionCotroller extends RestCotroller<Permission> {
     super.bindAll(app);
 
     app.get('/permission-check', (req, res) => this.commonResponse(req, res, 
-      new Promise<IPermissionCheckInfo>((resolve) => {
+      () => new Promise<IPermissionCheckInfo>((resolve) => {
         this.PermissionService.checkUserPermission(req, [ req.query.name as string ])
           .then(() => resolve({ grant: true }))
           .catch(() => resolve({ grant: false }));

@@ -6,6 +6,7 @@ import PermissionService from './PermissionService'
 import UserService from './UserService'
 import GroupService from './GroupService'
 import StorageService from './StorageService'
+import AliOSSUpdateService from './AliOSSUpdateService'
 
 export function useAllServices() {
   return {
@@ -17,5 +18,6 @@ export function useAllServices() {
     ChannelService,
     UpdateService,
     StorageService,
+    AliOSSUpdateService,
   }
 }

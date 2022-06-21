@@ -8,6 +8,11 @@ const devConfig = {
   AUTH_IV: 'e4e1825d5c306ec9',
   AUTH_DEF_EXPIRE_TIME: 80000 * 1000,//1day
   AUTH_MAX_EXPIRE_TIME: 2592000 * 1000,//30day
+  ALIYUN_OSS_ACCESS_KEY: 'LTAI5tJ2vDW3emCBE6hz4f75',
+  ALIYUN_OSS_ACCESS_SECRET: 'IVdJ37ABnnfb2oeitxCNx4HzXJf5NO',
+  ALIYUN_OSS_ACCESS_ACS: 'acs:ram::1631739252480713:role/updateserverossauth',
+  ALIYUN_OSS_BUCKET: 'imengyu',
+  ALIYUN_OSS_REGION: 'oss-cn-shanghai',
   VERSION: '1.0.32',
   PUBLIC_URL: 'http://localhost:3011',
   PORT: 3011,
@@ -22,6 +27,11 @@ const proConfig = {
   AUTH_IV: 'e4e1825d5c306ec9',
   AUTH_DEF_EXPIRE_TIME: 80000 * 1000,//1day
   AUTH_MAX_EXPIRE_TIME: 2592000 * 1000,//30day
+  ALIYUN_OSS_ACCESS_KEY: 'LTAI5tJ2vDW3emCBE6hz4f75',
+  ALIYUN_OSS_ACCESS_SECRET: 'IVdJ37ABnnfb2oeitxCNx4HzXJf5NO',
+  ALIYUN_OSS_ACCESS_ACS: 'acs:ram::1631739252480713:role/updateserverossauth',
+  ALIYUN_OSS_BUCKET: 'imengyu',
+  ALIYUN_OSS_REGION: 'oss-cn-shanghai',
   VERSION: '1.0.32',
   PUBLIC_URL: 'http://localhost:3011',
   PORT: 3011,

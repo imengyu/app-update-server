@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ant-design/icons-vue": "^6.0.1",
+    "ali-oss": "^6.17.1",
     "ant-design-vue": "^2.0.1",
     "axios": "^0.21.1",
     "c-scrollbar": "^0.1.6",

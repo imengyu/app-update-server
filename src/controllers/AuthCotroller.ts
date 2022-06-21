@@ -40,16 +40,16 @@ export class AuthController extends BaseController {
   }
 
   getAuthStatus(req : Request, res: Response) {
-    this.commonResponse(req, res, this.AuthService.checkUserAuthed(req), null, null, {
+    this.commonResponse(req, res, () => this.AuthService.checkUserAuthed(req), null, null, {
       authStatus: false,
       expireAt: null
     } as IAuthStatus);
   }
-  doAuth(req : Request, res: Response) { this.commonResponse(req, res, this.AuthService.doAuth(req)) }
-  doQrAuth(req : Request, res: Response) { this.commonResponse(req, res, this.AuthService.doQrAuth(req)) }
-  doQrScanNotify(req : Request, res: Response) { this.commonResponse(req, res, this.AuthService.doQrScanNotify(req)) }
-  doEndAuth(req : Request, res: Response) { this.commonResponse(req, res, this.AuthService.doEndAuth(req)) }
-  getQrAuthKey(req : Request, res: Response) { this.commonResponse(req, res, this.AuthService.getQrAuthKey(req)) }
+  doAuth(req : Request, res: Response) { this.commonResponse(req, res, () => this.AuthService.doAuth(req)) }
+  doQrAuth(req : Request, res: Response) { this.commonResponse(req, res, () => this.AuthService.doQrAuth(req)) }
+  doQrScanNotify(req : Request, res: Response) { this.commonResponse(req, res, () => this.AuthService.doQrScanNotify(req)) }
+  doEndAuth(req : Request, res: Response) { this.commonResponse(req, res, () => this.AuthService.doEndAuth(req)) }
+  getQrAuthKey(req : Request, res: Response) { this.commonResponse(req, res, () => this.AuthService.getQrAuthKey(req)) }
 }
 
 

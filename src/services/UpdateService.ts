@@ -229,11 +229,13 @@ export class UpdateService extends RestService<Update> {
             }
             //未启用，直接返回
             if (data.status !== 'enabled') {
+              //保存到缓存中
+              redisClient.set('check.app.' + package_name, '[]');
               resolve([]); 
               return; 
             }
             //获取更新数据
-            DB.table('update').where('app_id', data.id).where('status', 'enabled').orderBy('date', 'desc').get().then((datas) => {
+            DB.table('update').where('app_id', data.id).where('status', 'enabled').orderBy('date', 'desc').limit(64).get().then((datas) => {
               //保存到缓存中
               redisClient.set('check.app.' + package_name, JSON.stringify(datas));
               resolve(datas as Update[]);

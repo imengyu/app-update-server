@@ -22,26 +22,26 @@ export class UserCotroller extends RestCotroller<User> {
 
   bindAll(app : Express) {
     super.bindAll(app);
-    app.get('/user-info', (req, res) => this.commonResponse(req, res, this.UserService.getUserInfo(req)));
-    app.post('/user-info', (req, res) => this.commonResponse(req, res, this.UserService.updateUserInfo(req)));
-    app.post('/user-head', uploadUserHead.single('avatar'), (req, res) => this.commonResponse(req, res, this.UserService.uploadUserHead(req)));
+    app.get('/user-info', (req, res) => this.commonResponse(req, res, () => this.UserService.getUserInfo(req)));
+    app.post('/user-info', (req, res) => this.commonResponse(req, res, () => this.UserService.updateUserInfo(req)));
+    app.post('/user-head', uploadUserHead.single('avatar'), (req, res) => this.commonResponse(req, res, () => this.UserService.uploadUserHead(req)));
     app.post('/user-ban', (req, res) => this.commonResponse(req, res, 
-      this.UserService.banUser(parseInt(req.query.id as string)), 
+      () => this.UserService.banUser(parseInt(req.query.id as string)), 
       this.PermissionService.checkUserPermission(req, [ 'manage-users' ]), 
       { body: false, query: [ 'id' ] }));
     app.post('/user-withdraw', (req, res) => this.commonResponse(req, res, 
-      this.UserService.withdrawUser(parseInt(req.query.id as string)), 
+      () => this.UserService.withdrawUser(parseInt(req.query.id as string)), 
       this.PermissionService.checkUserPermission(req, [ 'manage-users' ]), 
       { body: false, query: [ 'id' ] }));
     app.post('/user-force-repass', (req, res) => this.commonResponse(req, res, 
-      this.UserService.forceSetUserPass(parseInt(req.query.id as string), req.query.pass as string), 
+      () => this.UserService.forceSetUserPass(parseInt(req.query.id as string), req.query.pass as string), 
       this.PermissionService.checkUserPermission(req, [ 'manage-users' ]), 
       { body: false, query: [ 'id', 'pass' ] }));
     app.post('/users-set-group', (req, res) => this.commonResponse(req, res, 
-      this.UserService.setUsersGroup(parseInt(req.query.group_id as string), req.query.user_ids as string), 
+      () => this.UserService.setUsersGroup(parseInt(req.query.group_id as string), req.query.user_ids as string), 
       this.PermissionService.checkUserPermission(req, [ 'manage-users' ]), 
       { body: false, query: [ 'group_id', 'user_ids' ] }));
-    app.get('/user-upload-key', (req, res) => this.commonResponse(req, res, this.UserService.genUploadKey(req)));
+    app.get('/user-upload-key', (req, res) => this.commonResponse(req, res, () => this.UserService.genUploadKey(req)));
   }
 }
 
