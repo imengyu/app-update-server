@@ -69,6 +69,10 @@ export default defineComponent({
   name: 'ManageStorage',
   setup: () => {
 
+    const dataSort = reactive({
+      field: "date",
+      order: "descend",
+    });
     const columns = [
       {
         dataIndex: 'id',
@@ -80,6 +84,7 @@ export default defineComponent({
         key: 'date',
         title: '上传时间',
         sorter: true,
+        sortOrder: dataSort.order,
       },
       {
         slots: { customRender: 'urls' },
@@ -113,10 +118,6 @@ export default defineComponent({
       total: 0,
       current: 1,
       pageSize: 10,
-    });
-    const dataSort = reactive({
-      field: "",
-      order: "",
     });
     const dataFilter = ref({});
     const dataLoadStatus = ref<LoadStatus>('notload');

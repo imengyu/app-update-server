@@ -174,6 +174,7 @@ export default defineComponent({
         dataIndex: 'date',
         key: 'date',
         title: '发布时间',
+        defaultSortOrder: 'descend',
         sorter: true,
       },
       {
@@ -201,8 +202,8 @@ export default defineComponent({
       pageSize: 10,
     });
     const dataSort = reactive({
-      field: "",
-      order: "",
+      field: "date",
+      order: "descend",
     });
     const dataFilter = ref({});
     const dataLoadStatus = ref<LoadStatus>('notload');
