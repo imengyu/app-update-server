@@ -33,7 +33,7 @@ dateProtoType.format = function (formatStr : string) {
   str = str.replace(/ss/, StringUtils.pad(this.getSeconds(), 2));
   return str;
 }
-dateProtoType.toISOString = dateProtoType.toJSON = dateProtoType.toString = function() {
+dateProtoType.toString = function() {
   return this.format();
 }
 

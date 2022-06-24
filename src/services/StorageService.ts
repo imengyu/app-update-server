@@ -1,9 +1,11 @@
 import fs from 'fs';
 import { Storage } from '../models/StorageModel';
+import { Autowired } from '../small/base/Autowired';
 import { RestService } from "../small/base/RestService";
 import { Service } from "../small/base/Service";
 import logger from '../utils/logger';
 import StringUtils from '../utils/string';
+import { AliOSSUpdateService } from './AliOSSUpdateService';
 
 /**
  * 子系统相关服务
@@ -23,9 +25,9 @@ export class StorageService extends RestService<Storage> {
       + 'LEFT JOIN user AS user2 ON storage.delete_user_id = user2.id ');
       return query;
     }
-    //删除本地文件
+    //删除存储文件
     this.beforeDelete = (req, id, data) => {
-      if (StringUtils.isNullOrEmpty(data.local_path)) {
+      if (!StringUtils.isNullOrEmpty(data.local_path)) {
         fs.access(data.local_path, (err) => {
           if (err === null) {
             fs.rm(data.local_path, (err) => {
@@ -35,8 +37,20 @@ export class StorageService extends RestService<Storage> {
           }
         });
       }
+      if (!StringUtils.isNullOrEmpty(data.third_storage_path)) {
+        const path = data.third_storage_path;
+        //ali-oss
+        if (path.startsWith('ali-oss:')) {
+          this.AliOSSUpdateService.deleteAliOSSUpdateFile(path.substring(8));
+        }
+      }
     };
   }
+
+  
+  @Autowired('Service')
+  private AliOSSUpdateService : AliOSSUpdateService;
+
 }
 
 export default new StorageService();

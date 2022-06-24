@@ -9,6 +9,7 @@
     "build-dev": "cross-env NODE_ENV=development webpack --progress --color --watch --config build/webpack.dev.conf.js",
     "build-prod": "cross-env NODE_ENV=production node build/build.js",
     "dev": "cd dist/development/ && node app.js",
+    "dev-inspect": "cd dist/development/ && node --inspect app.js",
     "prod": "cd dist/production/ && node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

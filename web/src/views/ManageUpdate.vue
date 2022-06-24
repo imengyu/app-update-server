@@ -77,21 +77,38 @@
         </a-form-item>
         <a-form-item label="更新安装包下载URL" name="update_package_url">
           <a-input v-model:value="formEditState.update_package_url" />
+
           <a-upload
-            v-model:file-list="fileList"
             name="file"
             :multiple="false"
+            :showUploadList="false"
             :action="apiRoot+'update-file-post'"
             :headers="getAuthHeaders()"
             :beforeUpload="beforeFileUpload"
             :data="getUploadFileData"
             @change="handleUploadChange"
           >
-            <a-button>
+            <a-button :disabled="uploadProgress >= 0">
               <upload-outlined></upload-outlined>
-              上传到本地存储库
+              {{ uploadProgress>= 0 ? `正在上传 ${uploadProgress} %` : '上传到本地存储库' }}
             </a-button>
           </a-upload>
+
+          <a-upload
+            v-if="canUseAliOss"
+            class="ml-3"
+            name="file"
+            :showUploadList="false"
+            :multiple="false"
+            :customRequest="handleUploadAliOSS"
+            @change="handleUploadChange"
+          >
+            <a-button :disabled="uploadProgress >= 0">
+              <upload-outlined></upload-outlined>
+              {{ uploadProgress>= 0 ? `正在上传 ${uploadProgress} %` : '上传到 阿里云 OSS' }}
+            </a-button>
+          </a-upload>
+
         </a-form-item>
         <a-form-item v-if="false" label="更新安装包下载URL（热更新）" name="update_hot_update_url">
           <a-input v-model:value="formEditState.update_hot_update_url" />
@@ -111,7 +128,7 @@
 import api, { LoadStatus, apiRoot, getAuthHeaders, IKeyValue } from '@/api';
 import common from '@/utils/common';
 import { message, Modal } from 'ant-design-vue';
-import { createVNode, defineComponent, onMounted, reactive, ref } from 'vue'
+import { computed, createVNode, defineComponent, onMounted, reactive, ref } from 'vue'
 import { Pagination, TableStateFilters } from '../models/TableCommon'
 import { ExclamationCircleOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons-vue'
 import { IUpdateInfo } from '@/api/update';
@@ -120,6 +137,10 @@ import { IAppInfo } from '@/api/app';
 import ChannelsSelector from './components/ChannelsSelector.vue';
 import PostRules from './components/PostRules.vue';
 import { FileInfo, FileItem } from '@/models/FileUpload';
+import OSS from 'ali-oss';
+import { getAliOSSClient, getAliOSSUploadUrl } from '@/utils/upload/uploadAliOSS';
+import storage from '@/api/storage';
+import { useStore } from 'vuex';
 
 export default defineComponent({
   components: {
@@ -189,7 +210,6 @@ export default defineComponent({
     const visibleEditDialog = ref(false);
     const isNew = ref(false);
 
-    const fileList = ref([]);
     const channelNames = ref<IKeyValue>([]); 
     const appNames = ref<IAppInfo[]>([]); 
 
@@ -349,15 +369,23 @@ export default defineComponent({
       formEditState.update_hot_update_url = '';
     };
 
+    const store = useStore();
+    const userInfo = computed(() => store.getters.userInfo);
+
+    const uploadProgress = ref(-1);
+
+    //普通上传
+    //=======================================
+
     function handleUploadChange(info: FileInfo) {
-      if (info.file.status !== 'uploading') {
-        console.log(info.file, info.fileList);
-      }
-      if (info.file.status === 'done') {
-        console.log(info.file.response);
+      if (info.file.status === 'uploading') {
+        uploadProgress.value = Math.floor(info.file.percent * 100);
+      } else if (info.file.status === 'done') {
+        uploadProgress.value = -1;
         formEditState.update_package_url = (info.file.response as any).data.path;
         message.success(`${info.file.name} 上传成功`);
       } else if (info.file.status === 'error') {
+        uploadProgress.value = -1;
         message.error(`${info.file.name} 上传失败.`);
       }
     }
@@ -386,16 +414,64 @@ export default defineComponent({
       }
     }
 
+    //阿里云上传
+    //=======================================
+
+    const aliOSSClient = ref<OSS|null>(null)
+    const canUseAliOss = ref(false);
+
+    function handleUploadAliOSS(obj: {
+      onProgress: (event: { percent: number }) => void;
+      onError: (event: Error, body?: object) => void;
+      onSuccess: (body: object) => void;
+      data: object;
+      filename: string;
+      file: File;
+      withCredentials: boolean;
+      action: string;
+      headers: object;
+    }) {
+      aliOSSClient.value?.multipartUpload(obj.file.name, obj.file, {
+        headers: obj.headers,
+        // 获取分片上传进度、断点和返回值。
+        progress: (p) => {
+          obj.onProgress({ percent: p });
+        },
+      }).then(() => {
+        const aliOSSPath = getAliOSSUploadUrl(obj.file.name);
+        obj.onSuccess({
+          data: { path: aliOSSPath }
+        });
+
+        //添加存储
+        storage.add({
+          third_storage_path: 'ali-oss:' + obj.file.name,
+          date: new Date().format(),
+          abs_path: aliOSSPath,
+          local_path: '',
+          using_status: 0,
+          upload_user_id: userInfo.value.id,
+        })
+
+      }).catch((e) => {
+        obj.onError(e);
+      })
+    }
+
     onMounted(() => {
       if (formSearchState.app_id)
         loadTableData(1);
       loadChannelNames();
       loadGroupNames();
+      getAliOSSClient().then((d) => {
+        aliOSSClient.value = d;
+        canUseAliOss.value = true;
+      });
     });
 
     return {
       managePermission,
-
+      canUseAliOss,
       columns,
       dataSource,
       dataPagination,
@@ -414,7 +490,8 @@ export default defineComponent({
       refPostRules,
 
       apiRoot,
-      fileList,
+      uploadProgress,
+      handleUploadAliOSS,
       handleUploadChange,
       beforeFileUpload,
       getUploadFileData,

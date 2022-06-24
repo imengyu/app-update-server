@@ -6,6 +6,7 @@ export interface FileItem {
   url?: string;
   type?: string;
   size: number;
+  percent: number;
   originFileObj: any;
 }
 

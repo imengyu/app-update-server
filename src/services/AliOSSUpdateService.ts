@@ -1,8 +1,10 @@
-
 import config from '../config';
 import OSS, { STS } from 'ali-oss';
 import { Request } from 'express';
 import { BaseService, Service } from "../small/base/Service";
+
+console.log(config);
+
 
 /**
  * 阿里云 OSS 服务
