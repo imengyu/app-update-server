@@ -21,7 +21,7 @@ export class RestService<T> extends BaseService {
   protected updateSolve : (req: Request, query : QueryGenerator) => void;
   protected insertSolve : (req: Request, query : QueryGenerator) => void;
   protected deleteSolve : (req: Request, query : QueryGenerator) => void;
-  protected afterUpdate : (req: Request, id: number, data: T) => void;
+  protected afterUpdate : (req: Request, id: number, data: T, beforeData: T) => void;
   protected afterInsert : (req: Request, id: number, data: T) => void;
   protected beforeDelete : (req: Request, id: number, data: T) => void;
   protected afterDelete : (req: Request, id: number) => void;
@@ -123,16 +123,28 @@ export class RestService<T> extends BaseService {
         this.updateSolve(req, query);
       query.exists().then((exists) => {
         if(exists) {
-          query.update(data, this.updateableFields)
-            .then(() => {
-              if(typeof this.afterUpdate === 'function')
-                this.afterUpdate(req, id, data);
-              resolve();
-            })
-            .catch((err) => {
-              logger.error('RestService.update', err);
-              reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo)
-            })
+          if(typeof this.afterUpdate === 'function') {
+            query.where('id', id).first().then((beforeData) => {
+              query.update(data, this.updateableFields)
+              .then(() => {
+                this.afterUpdate(req, id, data, beforeData as T);
+                resolve();
+              })
+              .catch((err) => {
+                logger.error('RestService.update', err);
+                reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo)
+              })
+            });
+          } else {
+            query.update(data, this.updateableFields)
+              .then(() => {
+                resolve();
+              })
+              .catch((err) => {
+                logger.error('RestService.update', err);
+                reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo)
+              })
+          }
         } else {
           reject({ errCode: ResposeCode.RES_NOT_FOUND } as PromiseResponseRejectInfo)
         }

@@ -1,7 +1,7 @@
 export class Update {
   id: number;
   date: string;
-  status: 'enabled'|'disabled';
+  status: 'enabled'|'disabled'|'archived';
   app_id: number;
   post_user_id: number;
   post_note: string;
@@ -23,6 +23,13 @@ export class Update {
   newVersionCode?: number,
   newVersionNote?: string,
   downloadUrl?: string,
+}
+
+/**
+ * 归档返回结构
+ */
+export interface IArchiveUpdateResult {
+  storage_id: number,
 }
 /**
  * 更新条件结构

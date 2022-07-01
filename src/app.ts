@@ -74,7 +74,7 @@ app.all('*', (req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "X-Requested-With,Origin, Content-Type,Authorization,Content-Type,Last-Modified");
   res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
-  res.header("X-Powered-By", 'IMengyu Server 3.2.1')
+  res.header("X-Powered-By", 'Mengyu Update Server 3.5.1')
   next();
 });
 //静态文件

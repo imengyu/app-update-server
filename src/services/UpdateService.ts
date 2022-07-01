@@ -3,7 +3,7 @@ import config from '../config/index';
 import { UserService } from './UserService';
 import { PromiseResponseRejectInfo } from './../small/utils/http-response';
 import { Request } from 'express';
-import { IUpdateResult, IUpdateRule, IUpdateRuleOperator, Update } from '../models/UpdateModel';
+import { IArchiveUpdateResult, IUpdateResult, IUpdateRule, IUpdateRuleOperator, Update } from '../models/UpdateModel';
 import { RestService } from "../small/base/RestService";
 import { Service } from "../small/base/Service";
 import { ResposeCode } from '../small/utils/http-response';
@@ -22,12 +22,33 @@ export class UpdateService extends RestService<Update> {
   public constructor() {
     super('update', 'version_name');
 
-    this.afterInsert = this.afterInsertOrUpdate.bind(this);
-    this.afterUpdate = this.afterInsertOrUpdate.bind(this);
+    this.afterInsert = this.afterInsertSolve.bind(this);
+    this.afterUpdate = this.afterUpdateSolve.bind(this);
     this.beforeDelete = this.solveBeforeDelete.bind(this);
   }
 
-  private afterInsertOrUpdate(req: Request, id: number, data: Update) {
+  
+  private afterUpdateSolve(req: Request, id: number, data: Update, before: Update) {
+    if (before.update_package_url !== data.update_package_url) {
+      if (before.update_package_url) {
+        //取消引用状态
+        DB.table('storage').where('abs_path', before.update_package_url).update({
+          using_status: 0,
+        });
+      }
+      if (data.update_package_url) {
+        //设置引用状态
+        DB.table('storage').where('abs_path', data.update_package_url).update({
+          using_status: id,
+        });
+      }
+    }
+    //清除缓存
+    DB.table('app').where('id', data.app_id).first().then((data) => {
+      redisClient.expire('check.app.' + data.package_name, 0); 
+    });
+  }
+  private afterInsertSolve(req: Request, id: number, data: Update) {
     if (data.update_package_url) {
       //设置引用状态
       DB.table('storage').where('abs_path', data.update_package_url).update({
@@ -142,6 +163,45 @@ export class UpdateService extends RestService<Update> {
         
         resolve({ hasUpdate: false });
       }).catch(reject);
+    });
+  }
+
+  /**
+   * 归档更新
+   */
+  public archive(req : Request) {
+    return new Promise<IArchiveUpdateResult>((resolve, reject) => {
+      const id = req.body.id as number;
+      const query = DB.table('update').where('id', req.body.id);
+      
+      query.where('id', id).first().then((beforeData) => {
+        //取消引用状态
+        DB.table('storage').where('abs_path', beforeData.update_package_url).update({
+          using_status: 0,
+        });
+        query.update({
+          status: 'archived',
+        }, this.updateableFields)
+          .then(() => {
+            DB.table('storage').where('abs_path', beforeData.update_package_url).select('id').first().then((storageData) => {
+              resolve({
+                storage_id: storageData ? storageData.id : null,
+              })
+            })
+            .catch((err) => {
+              logger.error('UpdateService.archive.getStorage', err);
+              reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo)
+            })
+          })
+          .catch((err) => {
+            logger.error('UpdateService.archive.update', err);
+            reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo)
+          })
+      })
+      .catch((err) => {
+        logger.error('UpdateService.archive.getId', err);
+        reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo)
+      })
     });
   }
 

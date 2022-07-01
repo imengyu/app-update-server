@@ -41,7 +41,7 @@
         </span>
       </template>
       <template #action="{ record }">
-        <span v-if="record.using_status == 0">
+        <span>
           <a class="text-danger" @click="handleDelete(record)">删除</a>
         </span>
       </template>

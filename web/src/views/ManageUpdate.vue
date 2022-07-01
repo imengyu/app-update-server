@@ -34,7 +34,8 @@
       @change="handleTableChange">
       <template #status="{ record }">
         <a-badge v-if="record.status=='enabled'" status="success" text="正常" />
-        <a-badge v-else-if="record.status=='disabled'" status="error" text="暂停更新" />
+        <a-badge v-else-if="record.status=='disabled'" status="warning" text="暂停更新" />
+        <a-badge v-else-if="record.status=='archived'" status="error" text="已归档" />
         <a-badge v-else status="warning" text="未知" />
       </template>
       <template #action="{ record }">
@@ -42,6 +43,8 @@
           <a @click="handleEdit(record)">编辑</a>
           <a-divider type="vertical" />
           <a @click="handleDelete(record)">删除</a>
+          <a-divider type="vertical" />
+          <a @click="handleArchive(record)">归档</a>
         </span>
       </template>
     </a-table>
@@ -78,43 +81,48 @@
         <a-form-item label="更新安装包下载URL" name="update_package_url">
           <a-input v-model:value="formEditState.update_package_url" />
 
-          <a-upload
-            name="file"
-            :multiple="false"
-            :showUploadList="false"
-            :action="apiRoot+'update-file-post'"
-            :headers="getAuthHeaders()"
-            :beforeUpload="beforeFileUpload"
-            :data="getUploadFileData"
-            @change="handleUploadChange"
-          >
-            <a-button :disabled="uploadProgress >= 0">
-              <upload-outlined></upload-outlined>
-              {{ uploadProgress>= 0 ? `正在上传 ${uploadProgress} %` : '上传到本地存储库' }}
-            </a-button>
-          </a-upload>
+          <div v-if="uploadProgress>= 0">
 
-          <a-upload
-            v-if="canUseAliOss"
-            class="ml-3"
-            name="file"
-            :showUploadList="false"
-            :multiple="false"
-            :customRequest="handleUploadAliOSS"
-            @change="handleUploadChange"
-          >
-            <a-button :disabled="uploadProgress >= 0">
-              <upload-outlined></upload-outlined>
-              {{ uploadProgress>= 0 ? `正在上传 ${uploadProgress} %` : '上传到 阿里云 OSS' }}
-            </a-button>
-          </a-upload>
+          </div> 
+            <div v-else>
+                <a-upload
+              name="file"
+              :multiple="false"
+              :showUploadList="false"
+              :action="apiRoot+'update-file-post'"
+              :headers="getAuthHeaders()"
+              :beforeUpload="beforeFileUpload"
+              :data="getUploadFileData"
+              @change="handleUploadChange"
+            >
+              <a-button :disabled="uploadProgress >= 0">
+                <upload-outlined></upload-outlined>
+                上传到本地存储库
+              </a-button>
+            </a-upload>
 
+            <a-upload
+              v-if="canUseAliOss"
+              class="ml-3"
+              name="file"
+              :showUploadList="false"
+              :multiple="false"
+              :customRequest="handleUploadAliOSS"
+              @change="handleUploadChange"
+            >
+              <a-button :disabled="uploadProgress >= 0">
+                <upload-outlined></upload-outlined>
+                上传到 阿里云 OSS
+              </a-button>
+            </a-upload>
+          </div>
         </a-form-item>
         <a-form-item v-if="false" label="更新安装包下载URL（热更新）" name="update_hot_update_url">
           <a-input v-model:value="formEditState.update_hot_update_url" />
         </a-form-item>
         <a-form-item label="状态" name="code">
-          <a-select class="ml-3" v-model:value="formEditState.status">
+          <a-badge v-if="formEditState.status=='archived'" status="error" text="已归档" />
+          <a-select v-else class="ml-3" v-model:value="formEditState.status">
             <a-select-option value="enabled"><a-badge status="success" text="启用更新" /></a-select-option>
             <a-select-option value="disabled"><a-badge status="error" text="暂停更新" /></a-select-option>
           </a-select>
@@ -353,6 +361,29 @@ export default defineComponent({
         },
       });
     };
+    const handleArchive = (record: IUpdateInfo) => {
+      Modal.confirm({
+        title: '确认将更新归档?',
+        icon: createVNode(ExclamationCircleOutlined),
+        content: '为节省空间，归档将删除更新文件，仅保留更新信息，无法恢复，是否继续?',
+        onOk: () => {
+          return new Promise<void>((resolve, reject) => { 
+            api.update.archive(record.id).then((d) => {
+              message.success('归档更新成功');
+              if(d.data?.storage_id)
+                api.storage.delete(d.data.storage_id)
+                  .then(() => message.success('更新文件删除成功'))
+                  .catch((e) => message.error('更新文件删除失败' + e));
+              loadTableData();
+              resolve();
+            }).catch((e) => {
+              message.error('归档更新失败' + e)
+              reject();
+            })
+          }).catch((e) => console.log(e));
+        },
+      });
+    };
     const handleNew = () => {
       visibleEditDialog.value = true;
       isNew.value = true;
@@ -512,6 +543,7 @@ export default defineComponent({
       handleEdit,
       handleEditOk,
       handleDelete,
+      handleArchive,
 
       loadGroupNames,
       filterSelectOption(input: string, option: { name: string })  {
