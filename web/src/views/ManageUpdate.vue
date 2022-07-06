@@ -82,10 +82,10 @@
           <a-input v-model:value="formEditState.update_package_url" />
 
           <div v-if="uploadProgress>= 0">
-
+            <a-progress :percent="uploadProgress" />
           </div> 
-            <div v-else>
-                <a-upload
+          <div v-else>
+            <a-upload
               name="file"
               :multiple="false"
               :showUploadList="false"
