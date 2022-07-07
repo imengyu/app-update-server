@@ -12,6 +12,8 @@ import { AliOSSUpdateService } from './AliOSSUpdateService';
  */
 @Service
 export class StorageService extends RestService<Storage> {
+  static TAG = 'StorageService';
+
   public constructor() {
     super('storage', 'name');
 
@@ -28,6 +30,7 @@ export class StorageService extends RestService<Storage> {
     //删除存储文件
     this.beforeDelete = (req, id, data) => {
       if (!StringUtils.isNullOrEmpty(data.local_path)) {
+        logger.info(StorageService.TAG, `Delete local file: '${data.local_path}'`);
         fs.access(data.local_path, (err) => {
           if (err === null) {
             fs.rm(data.local_path, (err) => {
@@ -38,6 +41,7 @@ export class StorageService extends RestService<Storage> {
         });
       }
       if (!StringUtils.isNullOrEmpty(data.third_storage_path)) {
+        logger.info(StorageService.TAG, `Delete third_storage_path file: '${data.third_storage_path}'`);
         const path = data.third_storage_path;
         //ali-oss
         if (path.startsWith('ali-oss:')) {

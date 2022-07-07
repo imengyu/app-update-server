@@ -2,6 +2,7 @@ import config from '../config';
 import OSS, { STS } from 'ali-oss';
 import { Request } from 'express';
 import { BaseService, Service } from "../small/base/Service";
+import logger from '../utils/logger';
 
 console.log(config);
 
@@ -11,6 +12,8 @@ console.log(config);
  */
 @Service
 export class AliOSSUpdateService extends BaseService {
+
+  static TAG = 'AliOSSUpdateService';
 
   client = new OSS({
     region: config.ALIYUN_OSS_REGION,
@@ -23,7 +26,12 @@ export class AliOSSUpdateService extends BaseService {
    * 阿里云OSS删除文件
    */
   public async deleteAliOSSUpdateFile(objectPath: string) {
-    await this.client.delete(objectPath);         
+    try {
+      logger.info(AliOSSUpdateService.TAG, `Delete ali oss file: '${objectPath}'`);
+      await this.client.delete(objectPath);    
+    } catch (e) {
+      logger.warn(AliOSSUpdateService.TAG, `Delete ali oss file: '${objectPath}' failed: ${e}`);
+    }
   }
 
   /**
@@ -47,6 +55,7 @@ export class AliOSSUpdateService extends BaseService {
           Bucket: config.ALIYUN_OSS_BUCKET,
         });
       }).catch((err) => {
+        logger.warn(AliOSSUpdateService.TAG, `assumeRole failed: ${err}`);
         reject(err);
       });
     });
