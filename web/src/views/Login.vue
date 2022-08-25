@@ -2,15 +2,7 @@
   <div class="vc-login">
     <div class="vc-box mb-5">
       <h1>工作人员身份认证</h1>
-      <div class="vc-login-tab">
-        <div :class="loginMode=='key'?'active':''" @click="loginMode=loginIsRequesting?loginMode:'key'">
-          <img src="../assets/images/icon/pass.svg">
-        </div>
-        <div :class="loginMode=='qr'?'active':''" @click="loginMode=loginIsRequesting?loginMode:'qr'">
-          <img src="../assets/images/icon/qr.svg">
-        </div>
-      </div>
-      <div v-show="loginMode=='key'" class="vc-login-cbox">
+      <div class="vc-login-cbox">
         <a-alert v-if="loginErr&&loginErr!=''" type="error" :message="loginErr" banner closable :after-close="() => loginErr=''" />
         <a-input 
           size="large" 
@@ -26,24 +18,6 @@
           :style="{marginTop:'30px'}" 
           :loading="loginIsRequesting"
           @click="onAuthButtonClicked">认证</a-button>
-      </div>
-      <div v-show="loginMode=='qr'" class="vc-login-cbox">
-        <a-spin :spinning="loginQRIsRequesting">
-          <canvas id="vc-login-qr" :data-target="loginQRVal" :data-expired="loginQRExpired"></canvas>
-        </a-spin>
-        <div v-show="loginQRScaned" class="vc-qr-expired">
-          <span  :style="{height:'auto'}">
-            <CheckCircleFilled :style="{ color:'rgb(76, 175, 80)', fontSize: '3em', marginBottom: '10px' }" /><br/>
-            扫描成功，请在手机上确认
-          </span>
-        </div>
-        <div v-show="loginQRExpired && !loginQRIsRequesting" class="vc-qr-expired" @click="onRequestQRKey">
-          <span>
-            {{loginQRErr!=''?'请求二维码失败':'二维码已失效'}}
-            <br/>
-            点击重新获取
-          </span>
-        </div>
       </div>
     </div>
   </div>
