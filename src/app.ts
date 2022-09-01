@@ -1,3 +1,4 @@
+import { MemRedis } from './utils/memRedis';
 const ev = eval('require(\'./app.fix\')');
 
 global.__NODEJS_GLOBAL__ = ev.__NODEJS_GLOBAL__;
@@ -22,15 +23,16 @@ import StringUtils from './utils/string';
 logger.configure();
 
 //配置Redis以及数据库
+const hasRedis = config.REDIS_ADDRESS && config.REDIS_ADDRESS !== '';
 
 const app = express();
 const RedisStore = connectRedis(session);
-const redisClient = redis.createClient({
+const redisClient = hasRedis ? redis.createClient({
   host: config.REDIS_ADDRESS,
   port: config.REDIS_PORT,
   password: StringUtils.isNullOrEmpty(config.REDIS_PASS) ? undefined : config.REDIS_PASS,
   db: config.REDIS_DB,
-})
+}) : new MemRedis() as unknown as redis.RedisClient;
 
 //配置上传器
 const uploadFiles = multer({ 
@@ -59,13 +61,13 @@ app.use(session({
     maxAge: 640000
   },
   secret: 'vcity_server_922',
-  store: new RedisStore({
+  store: hasRedis ? new RedisStore({
     client: redisClient,
     host: config.REDIS_ADDRESS,
     port: config.REDIS_PORT,
     ttl: 60 * 60 * 24 * 30, 
     prefix: 'vcity',
-  }),
+  }) : undefined,
   saveUninitialized: false,
   resave: false,
 }));

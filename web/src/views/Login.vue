@@ -2,7 +2,7 @@
   <div class="vc-login">
     <div class="vc-box mb-5">
       <h1>工作人员身份认证</h1>
-      <div class="vc-login-cbox">
+      <div class="vc-login-cbox mt-3">
         <a-alert v-if="loginErr&&loginErr!=''" type="error" :message="loginErr" banner closable :after-close="() => loginErr=''" />
         <a-input 
           size="large" 
@@ -26,7 +26,7 @@
 <script lang="ts">
 import QRCode from 'qrcode'
 import { defineComponent, watch, ref } from 'vue';
-import { message } from 'ant-design-vue';
+import { message, Modal } from 'ant-design-vue';
 import { CheckCircleFilled } from '@ant-design/icons-vue';
 import api, { IEmpty } from '@/api';
 import router from '@/router';
@@ -52,7 +52,7 @@ export default defineComponent({
     const route = useRoute();
 
     const inputPass = ref('');
-    const loginMode = ref<'qr'|'key'>('qr');
+    const loginMode = ref<'qr'|'key'>('key');
     const loginRember = ref(false);
     const loginQRKey = ref('');
     const loginQRVal = ref('');
@@ -146,12 +146,16 @@ export default defineComponent({
             loginQRErr.value = '' + e;
           } else {
             loginErr.value = '' + e;
+            Modal.error({
+              title: '失败',
+              content: '' + e.errorMessage,
+            });
           }
           loginIsRequesting.value = false;        
         })
     }
     function returnBackOrGotoHome() {
-      if(!common.isNullOrEmpty(route.query.redirectTo)) location.href = <string>route.query.redirectTo;
+      if(!common.isNullOrEmpty(route.query.redirectTo)) location.href = route.query.redirectTo as string;
       else router.push({ name: 'Home' });
     }
 
@@ -176,7 +180,6 @@ export default defineComponent({
   mounted() {
     setTimeout(() => {
       if(this.isAuthed) this.returnBackOrGotoHome();
-      else this.onRequestQRKey();
     }, 1000);
   },
 });
