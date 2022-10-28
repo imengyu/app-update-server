@@ -58,7 +58,7 @@
       <h1>在左上角选择你要发布更新的应用</h1>
     </div>
     <!--编辑对话框-->
-    <a-modal v-model:visible="visibleEditDialog" :title="(isNew?'发布':'编辑')+'更新'" @ok="handleEditOk" width="70%">
+    <a-modal v-model:visible="visibleEditDialog" :title="(isNew?'发布':'编辑')+'更新'" @ok="handleEditOk" width="86%">
       <a-form ref="formEdit" :model="formEditState" :rules="formEditRules" :label-col="labelCol" :wrapper-col="wrapperCol">
         <a-form-item label="版本名字（给用户看的）" name="version_name">
           <a-input v-model:value="formEditState.version_name" placeholder="给用户看的版本名字，例如1.0.0" />
@@ -424,14 +424,11 @@ export default defineComponent({
 
     let uploadHeadKey = '';
     function beforeFileUpload(file: FileItem)  {
-      const fileAccept = file.type === 'application/vnd.android.package-archive';
-      if (!fileAccept)
-        message.error('请上传 apk 格式安装包 !');
       const isLt256M = file.size / 1024 / 1024 < 256;
       if (!isLt256M) 
         message.error('安装包大小必须小于 256MB!');
       return new Promise<void>((resolve, reject) => {
-        if(fileAccept && isLt256M) {
+        if(isLt256M) {
           api.user.getUserUploadKey().then((key) => {
             if(key.data)
               uploadHeadKey = key.data.key;

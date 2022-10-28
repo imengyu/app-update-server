@@ -238,7 +238,7 @@ export class UpdateService extends RestService<Update> {
           paramValue = req.query[op.paramName] as string;
           if (StringUtils.isNullOrEmpty(paramValue))
             return false;
-          return mactchOperators(op.operator, paramValue, op.value, 'other');
+          return mactchOperators(op.operator, paramValue, op.value, op.paramName.endsWith('_time') ? 'Date' : 'other');
         case 'last_update_time': 
           paramValue = req.query['last_update_time'] as string;
           if (StringUtils.isNullOrEmpty(paramValue))
