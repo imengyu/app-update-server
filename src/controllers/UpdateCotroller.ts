@@ -41,6 +41,9 @@ export class UpdateCotroller extends RestCotroller<Update> {
     app.get('/update-check', (req, res) => 
       this.commonResponse(req, res, () => this.UpdateService.updateCheckCore(req))
     );
+    app.get('/dl', (req, res) => {
+      this.UpdateService.updateDownload(req, res);
+    });
     app.post(`/${this.subName}/archive`, (req, res) => {
       this.commonResponse(
         req,

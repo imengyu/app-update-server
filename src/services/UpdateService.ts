@@ -2,7 +2,7 @@ import { AuthService } from './AuthService';
 import config from '../config/index';
 import { UserService } from './UserService';
 import { PromiseResponseRejectInfo } from './../small/utils/http-response';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { IArchiveUpdateResult, IUpdateResult, IUpdateRule, IUpdateRuleOperator, Update } from '../models/UpdateModel';
 import { RestService } from "../small/base/RestService";
 import { Service } from "../small/base/Service";
@@ -82,6 +82,29 @@ export class UpdateService extends RestService<Update> {
   @Autowired('Service')
   private AuthService : AuthService;
 
+
+  /**
+    * 更新下载
+    * @param req 
+    * @returns 
+    */
+  public updateDownload(req : Request, res: Response) {
+    if (StringUtils.isNullOrEmpty(req.query.q as string)) {
+      res.sendStatus(400).send('');
+      return;
+    }
+    this.getAppUpdateUrlById(parseInt(req.query.q as string)).then((data) => {
+      const update = data.update;
+      
+      res.send(`<html><head><title>下载页面</title><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=0">` + 
+      `<style>body{padding:200px 0;text-align:center}a{display:inline-block;padding:10px 20px;background-color:#008ee1;color:#fff;text-decoration:none}a:hover{background-color:#0e6dec}h1{margin:0}p{color:#888;margin-bottom:20px;margin-top:10px}</style>`+
+      `</head><body><h1>${data.name}</h1><p>${update.version_name}</p><a href="${update.update_package_url}">点击下载App</a></body></html>`);
+        
+    }).catch(() => {
+      res.sendStatus(404).send('');
+      return;
+    })
+  }
 
   /**
    * 更新检查核心函数
@@ -275,6 +298,54 @@ export class UpdateService extends RestService<Update> {
     return mactchGroup(ops[0]);
   } 
 
+  //从数据库或者缓存中读取最新下载版本
+  private getAppUpdateUrlById(id: number) {
+    return new Promise<AppUpdateUrlRetInfo>((resolve, reject) => {
+      redisClient.get('dl.app.' + id, (err, str) => {
+        if (err || StringUtils.isNullOrEmpty(str)) {
+          //没有缓存，从数据库读取
+          //获取app_id
+          DB.table('app').where('id', id).first().then((data) => {
+            if (data == null) {
+              reject({ errCode: ResposeCode.APP_NOT_FOUND } as PromiseResponseRejectInfo); 
+              return; 
+            }
+            //未启用，直接返回
+            if (data.status !== 'enabled') {
+              reject('not enable'); 
+              return; 
+            }
+            //获取更新数据
+            DB.table('update').where('app_id', data.id).where('status', 'enabled').orderBy('date', 'desc').limit(1).get().then((datas) => {
+              if (datas.length === 0) {
+                reject('not enable'); 
+                return; 
+              }
+
+              const result = {
+                update: (datas as Update[])[0],
+                name: data.name,
+              };
+              //保存到缓存中
+              redisClient.set('dl.app.' + id, JSON.stringify(result));
+              resolve(result);
+            }).catch((e) => {
+              logger.error('UpdateService.getAppUpdateUrlById', e);
+              reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo);
+              return; 
+            });
+          }).catch((e) => {
+            logger.error('UpdateService.getAppId', e);
+            reject({ errCode: ResposeCode.DATA_BASE_ERROR } as PromiseResponseRejectInfo);
+            return; 
+          });
+          return;
+        }
+        //有缓存，直接返回缓存
+        resolve(JSON.parse(str));
+      });
+    });
+  }
   //从数据库或者缓存中读取更新信息
   private getAppUpdateInfoFormChaceOrDB(package_name: string) {
     return new Promise<Update[]>((resolve, reject) => {
@@ -357,6 +428,11 @@ export class UpdateService extends RestService<Update> {
       }).catch(reject);
     });
   }
+}
+
+interface AppUpdateUrlRetInfo {
+  name: string,
+  update: Update
 }
 
 export default new UpdateService();
